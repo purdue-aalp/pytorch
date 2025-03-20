@@ -543,6 +543,12 @@ class TORCH_API Tensor: public TensorBase {
   inline Tensor to(Device device, caffe2::TypeMeta type_meta, bool non_blocking=false, bool copy=false) const {
     return this->to(device, /*scalar_type=*/typeMetaToScalarType(type_meta), non_blocking, copy);
   }
+  
+  void to_device(DeviceIndex index) const {
+    //printf("Tensor::to_device(DeviceIndex index=%d)\n", index);
+    impl_->set_custom_device(index);
+  }
+
 
   template <typename F, typename... Args>
   decltype(auto) m(F func, Args&&... params) const {

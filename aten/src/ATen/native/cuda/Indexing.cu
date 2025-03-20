@@ -1196,8 +1196,9 @@ void index_add_cuda_impl(const Tensor& self, int64_t dim, const Tensor& index, c
           cuda::detail::getTensorInfo<const scalar_t, unsigned int>(source_);
         const int sourceAddDim = sourceInfo.collapseDims(dim);
         sourceInfo.reduceDim(sourceAddDim);
-
-        auto indexInfo =
+	
+	c10::cuda::device_synchronize();  
+ 	auto indexInfo =
         cuda::detail::getTensorInfo<const index_t, unsigned int>(index);
         indexInfo.collapseDims();
 
