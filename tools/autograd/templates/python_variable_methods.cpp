@@ -420,6 +420,12 @@ static Tensor dispatch_to(const Tensor & self, Device device, ScalarType dtype, 
   return self.to(device, dtype, non_blocking, copy, optional_memory_format);
 }
 
+static Tensor dispatch_to(const Tensor & self, Device device) {
+  pybind11::gil_scoped_release no_gil;
+  self.unsafeGetTensorImpl()->set_custom_device(device.index());
+  return self;
+}
+
 static PyObject * THPVariable_cpu(PyObject* self, PyObject* args, PyObject* kwargs)
 {
    HANDLE_TH_ERRORS
@@ -1012,6 +1018,25 @@ static PyObject * THPVariable_to(PyObject* self, PyObject* args, PyObject* kwarg
   END_HANDLE_TH_ERRORS
 }
 
+static PyObject * THPVariable_to_device(PyObject* self, PyObject* args, PyObject* kwargs)
+{
+  HANDLE_TH_ERRORS
+  static PythonArgParser parser({
+    "to_device(Device device=None)",
+  });
+  ParsedArgs<1> parsed_args;
+  auto r = parser.parse(self, args, kwargs, parsed_args);
+  //auto parsed = parse_to_conversion(r, /*allow_copy*/ true);
+  auto device = r.deviceOptional(0);
+  auto& self_ = THPVariable_Unpack(self);
+  if (device) {
+    return THPVariable_Wrap(dispatch_to(self_, *device));
+  }
+  Py_RETURN_NONE;
+  END_HANDLE_TH_ERRORS
+}
+
+
 // implemented on the python object b/c arbitrarily nested list not declarable in native_functions.yaml
 // See: ATen/native/README.md for more context
 static PyObject * THPVariable_tolist(PyObject* self, PyObject* args)
@@ -1319,6 +1344,9 @@ PyMethodDef variable_methods[] = {
   {"storage_offset", THPVariable_storage_offset, METH_NOARGS, nullptr},
   {"stride", castPyCFunctionWithKeywords(THPVariable_stride), METH_VARARGS | METH_KEYWORDS, nullptr},
   {"to", castPyCFunctionWithKeywords(THPVariable_to), METH_VARARGS | METH_KEYWORDS, nullptr},
+  
+  // adding this for UVA
+  {"to_device", castPyCFunctionWithKeywords(THPVariable_to_device), METH_VARARGS | METH_KEYWORDS, NULL},	  
   {"tolist", THPVariable_tolist, METH_NOARGS, nullptr},
   {"type", castPyCFunctionWithKeywords(THPVariable_type), METH_VARARGS | METH_KEYWORDS, nullptr},
   ${py_method_defs}
