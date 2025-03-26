@@ -201,7 +201,7 @@ __global__ void EmbeddingBag_updateOutputKernel_sum_mean(
     index_t padding_idx, int64_t numRows) {
 
   // the strategy here is that each bag x feature is handled by a single thread
- printf("\nin emb kernel");
+  //printf("\nin emb kernel");
   using accscalar_t = acc_type<scalar_t, true>;
   int64_t chunksPerBag = ceil_div(featureSize, (int64_t)blockDim.x);
   int64_t numChunks = numBags * chunksPerBag;

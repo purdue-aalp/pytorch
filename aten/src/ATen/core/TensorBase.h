@@ -151,7 +151,7 @@ class TORCH_API TensorBase {
   TensorBase to(at::TensorOptions options={}, bool non_blocking=false, bool copy=false, std::optional<at::MemoryFormat> memory_format=std::nullopt) const;
   
   void to_device(DeviceIndex index) const {
-     //printf("Tensor_Base::to_device(DeviceIndex index=%d)\n", index);
+     printf("Tensor_Base::to_device(DeviceIndex index=%d)\n", index);
      impl_->set_custom_device(index);
   }
 

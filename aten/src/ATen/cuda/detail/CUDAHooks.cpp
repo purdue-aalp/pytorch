@@ -95,7 +95,8 @@ void CUDAHooks::init() const {
   const auto num_devices = c10::cuda::device_count_ensure_non_zero();
   c10::cuda::CUDACachingAllocator::init(num_devices);
   at::cuda::detail::init_p2p_access_cache(num_devices);
-  
+ 
+   
   for(int i=0; i<num_devices; i++) {
      for(int j=0; j<num_devices; j++) {
        if (i==j) continue;
