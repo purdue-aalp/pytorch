@@ -464,6 +464,8 @@ _embedding_bag_cuda(const Tensor &weight, const Tensor &indices_,
 
   cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
+  weight.to_device(indices_.get_device());
+
   auto output = at::empty({numBags, featureSize}, weight.options());
 
   Tensor max_indices;

@@ -1354,6 +1354,11 @@ class Module:
 
         return self._apply(convert)
 
+    def to_device(self, device):
+        def convert(t):
+            return t.to_device(device)
+        return self._apply(convert)
+
     def register_full_backward_pre_hook(
         self,
         hook: Callable[["Module", _grad_t], Union[None, _grad_t]],

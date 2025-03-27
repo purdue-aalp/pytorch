@@ -1413,6 +1413,7 @@ Tensor as_strided_tensorimpl(
       self.key_set(),
       self.dtype());
   setStrided(result, size, stride, storage_offset);
+  result.to_device(self.get_device());
   return result;
 }
 
@@ -1951,6 +1952,7 @@ Tensor alias_with_sizes_and_strides(
     self_tmp_->set_sizes_and_strides(sizes, strides);
   }
   namedinference::propagate_names(self_, self);
+  self_.to_device(self.get_device());
   return self_;
 }
 
@@ -1985,6 +1987,7 @@ Tensor alias_with_sizes_and_strides(
         sizes, strides, self.sym_storage_offset());
   }
   namedinference::propagate_names(self_, self);
+  self_.to_device(self.get_device());
   return self_;
 }
 

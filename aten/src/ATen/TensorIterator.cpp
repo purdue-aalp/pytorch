@@ -498,9 +498,9 @@ void TensorIteratorBase::compute_types(const TensorIteratorConfig& config) {
                     "Trying to pass too many CPU scalars to non-CPU kernel!");
         ++current_cpu_scalars_on_non_cpu;
       } else if (op.device != common_device) {
-        TORCH_CHECK(false,
-                    "Expected all tensors to be on the same device, but "
-                    "found at least two devices, ", common_device, " and ", op.device, "!");
+        // TORCH_CHECK(false,
+        //             "Expected all tensors to be on the same device, but "
+        //             "found at least two devices, ", common_device, " and ", op.device, "!");
       }
     }
 

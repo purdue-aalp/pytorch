@@ -2803,6 +2803,15 @@ struct C10_API TensorImpl : public c10::intrusive_ptr_target {
     refresh_device_policy();
   }
 
+  // Change the device location
+  void set_custom_device(DeviceIndex index) {
+    (*device_opt_).set_index(index);
+    #ifdef YECHEN_DEBUG
+    printf("new_divice_ index is %d, should be %d\n", (*new_opt_).index(), index);
+    #endif
+    //set_custom_device(true); 
+  }
+
   void set_custom_layout(bool custom_layout) {
     custom_layout_ = custom_layout;
     refresh_layout_policy();

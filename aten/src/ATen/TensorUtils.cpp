@@ -157,11 +157,11 @@ void checkSameGPU(CheckedFrom c, const TensorArg& t1, const TensorArg& t2) {
         << " to be on GPU (while checking arguments for " << c << ")";
     TORCH_CHECK(false, oss.str());
   }
-  TORCH_CHECK(
-    t1->get_device() == t2->get_device(),
-    "Expected tensor for ", t1, " to have the same device as tensor for ", t2,
-    "; but device ", t1->get_device(), " does not equal ", t2->get_device(),
-    " (while checking arguments for ", c, ")");
+  // TORCH_CHECK(
+  //   t1->get_device() == t2->get_device(),
+  //   "Expected tensor for ", t1, " to have the same device as tensor for ", t2,
+  //   "; but device ", t1->get_device(), " does not equal ", t2->get_device(),
+  //   " (while checking arguments for ", c, ")");
 }
 
 void checkAllSameGPU(CheckedFrom c, ArrayRef<TensorArg> tensors) {
