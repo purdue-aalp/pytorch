@@ -136,6 +136,107 @@ __global__ void EmbeddingBag_updateOutputKernel_sum_mean(
       CUDA_KERNEL_ASSERT(end >= begin);
       accscalar_t weightFeatSum = 0;
       int64_t bag_size_ = 0;
+      scalar_t lv0, lv1, lv2,lv3,lv4, lv5, lv6, lv7; //temp registers to store the prefetch values
+      int ctr = 0;
+      for (int64_t emb = begin; emb < end; emb++) {
+        int ctr_mod;
+        ctr_mod = ctr%8;//assume pd is set to 4
+        if(ctr_mod==0){
+          int64_t weightRow = input[emb] * weight_stride0;
+          lv0 = weightFeat[weightRow];
+          weightRow = input[emb+1] * weight_stride0;
+          lv1 = weightFeat[weightRow];
+          weightRow = input[emb+2] * weight_stride0;
+          lv2 = weightFeat[weightRow];
+          weightRow = input[emb+3] * weight_stride0;
+          lv3 = weightFeat[weightRow];
+          weightRow = input[emb+4] * weight_stride0;
+          lv4 = weightFeat[weightRow];
+          weightRow = input[emb+5] * weight_stride0;
+          lv5 = weightFeat[weightRow];
+          weightRow = input[emb+6] * weight_stride0;
+          lv6 = weightFeat[weightRow];
+          weightRow = input[emb+7] * weight_stride0;
+          lv7 = weightFeat[weightRow];
+        }
+
+        bool pad = (input[emb] == padding_idx);
+        CUDA_KERNEL_ASSERT(input[emb] < numRows);
+        // Rishabh: reshuffle independent instructions to create gap between load and use dependency.
+        ctr++;
+        bag_size_ += pad ? 0 : 1;
+        if (featureDim == 0) {
+          offset2bag[emb] = bag;
+        }
+        //const int64_t weightRow = input[emb] * weight_stride0;
+        scalar_t weightValue;
+        switch(ctr_mod){//get the prefetched value
+          case 0:  weightValue = pad ? static_cast<scalar_t>(0) : lv0;break;
+          case 1:  weightValue = pad ? static_cast<scalar_t>(0) : lv1;break;
+          case 2:  weightValue = pad ? static_cast<scalar_t>(0) : lv2;break;
+          case 3:  weightValue = pad ? static_cast<scalar_t>(0) : lv3;break;
+          case 4:  weightValue = pad ? static_cast<scalar_t>(0) : lv4;break;
+          case 5:  weightValue = pad ? static_cast<scalar_t>(0) : lv5;break;
+          case 6:  weightValue = pad ? static_cast<scalar_t>(0) : lv6;break;
+          case 7:  weightValue = pad ? static_cast<scalar_t>(0) : lv7;break;
+        }
+        
+
+        //scalar_t weightValue = weightFeat[weightRow];
+        //weightValue = pad ? static_cast<scalar_t>(0) : weightValue;
+
+        if (per_sample_weights) {
+          accscalar_t scaleWeightBy = static_cast<accscalar_t>(
+              per_sample_weights[emb * per_sample_weights_stride]);
+          weightFeatSum += scaleWeightBy * static_cast<accscalar_t>(weightValue);
+        } else {
+          weightFeatSum += static_cast<accscalar_t>(weightValue);
+        }
+      }
+
+      if (mode == static_cast<int64_t>(EmbeddingBagMode::MEAN)) {
+      //if (mode == MODE_MEAN) {
+        if (bag_size_ != 0) {
+          weightFeatSum = weightFeatSum / static_cast<accscalar_t>(bag_size_);
+        }
+      }
+      bag_size[bag] = bag_size_;
+      output[bag * featureSize + featureDim] = static_cast<scalar_t>(weightFeatSum);
+    }
+  }
+}
+
+
+/*
+// This kernel assumes that all input tensors except `weight` and
+// per_sample_weights are contiguous.
+template <typename scalar_t, typename index_t>
+__global__ void EmbeddingBag_updateOutputKernel_sum_mean(
+    const index_t *input, const index_t *offsets, const scalar_t *weight, scalar_t *output,
+    index_t *offset2bag, int64_t numIndices, int64_t numBags,
+    int64_t featureSize, int64_t weight_stride0, int64_t weight_stride1,
+    int mode, index_t *bag_size,
+    const scalar_t* per_sample_weights, int64_t per_sample_weights_stride,
+    index_t padding_idx, int64_t numRows) {
+
+  // the strategy here is that each bag x feature is handled by a single thread
+
+  using accscalar_t = acc_type<scalar_t, true>;
+  int64_t chunksPerBag = ceil_div(featureSize, (int64_t)blockDim.x);
+  int64_t numChunks = numBags * chunksPerBag;
+  int64_t chunkOffset = blockIdx.x * blockDim.y + threadIdx.y;
+  int64_t chunkStride = gridDim.x * blockDim.y;
+
+  for (int64_t chunk = chunkOffset; chunk < numChunks; chunk += chunkStride) {
+    int64_t featureDim = (chunk % chunksPerBag) * blockDim.x + threadIdx.x;
+    if (featureDim < featureSize) {
+      int64_t bag = chunk / chunksPerBag;
+      const scalar_t *weightFeat = weight + featureDim * weight_stride1;
+      int64_t begin = bag == 0 ? 0 : offsets[bag]; // forces first offset to be 0 instead of asserting on it
+      int64_t end = (bag < numBags - 1) ? (offsets[bag + 1]) : numIndices;
+      CUDA_KERNEL_ASSERT(end >= begin);
+      accscalar_t weightFeatSum = 0;
+      int64_t bag_size_ = 0;
       int pd = 5;
       #pragma unroll
       for (int zz = 0; zz < pd; zz++){
@@ -202,6 +303,8 @@ __global__ void EmbeddingBag_updateOutputKernel_sum_mean(
     }
   }
 }
+
+*/
 
 /*
 // This kernel assumes that all input tensors except `weight` and
