@@ -96,12 +96,20 @@ void CUDAHooks::init() const {
   c10::cuda::CUDACachingAllocator::init(num_devices);
   at::cuda::detail::init_p2p_access_cache(num_devices);
   
+  int canAccess;
+  int device;
+  cudaGetDevice(&device);
   for(int i=0; i<num_devices; i++) {
-     for(int j=0; j<num_devices; j++) {
-       if (i==j) continue;
-       at::cuda::get_p2p_access(i, j);
+      cudaSetDevice(i);
+      for(int j=0; j<num_devices; j++) {
+        if (i==j) continue;
+        //at::cuda::get_p2p_access(i, j);
+        cudaDeviceCanAccessPeer(&canAccess, i, j);
+        if (canAccess)
+          cudaDeviceEnablePeerAccess(j, 0);
      }
   }
+  cudaSetDevice(device);
 
 #if AT_MAGMA_ENABLED()
   TORCH_INTERNAL_ASSERT(magma_init_fn != nullptr, "Cannot initialize magma, init routine not set");
