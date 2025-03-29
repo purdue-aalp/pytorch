@@ -106,7 +106,7 @@ __global__ void EmbeddingBag_updateOutputKernel_max(
   }
 }
 
-
+/*
 // This kernel assumes that all input tensors except `weight` and
 // per_sample_weights are contiguous.
 template <typename scalar_t, typename index_t>
@@ -205,7 +205,7 @@ __global__ void EmbeddingBag_updateOutputKernel_sum_mean(
     }
   }
 }
-
+*/
 
 /*
 // This kernel assumes that all input tensors except `weight` and
@@ -306,7 +306,7 @@ __global__ void EmbeddingBag_updateOutputKernel_sum_mean(
 
 */
 
-/*
+
 // This kernel assumes that all input tensors except `weight` and
 // per_sample_weights are contiguous.
 template <typename scalar_t, typename index_t>
@@ -367,7 +367,7 @@ __global__ void EmbeddingBag_updateOutputKernel_sum_mean(
   }
 }
 
-*/
+
 
 /*
 // This kernel assumes that all input tensors except `weight` and
