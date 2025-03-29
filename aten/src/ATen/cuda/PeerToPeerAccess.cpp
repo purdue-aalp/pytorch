@@ -34,7 +34,7 @@ void init_p2p_access_cache(int64_t num_devices) {
 }  // namespace detail
 
 bool get_p2p_access(c10::DeviceIndex dev, c10::DeviceIndex dev_to_access) {
-  printf("\nin p2p");
+  //printf("\nin p2p");
   at::globalContext().lazyInitDevice(c10::DeviceType::CUDA);
 
   TORCH_CHECK(dev >= 0 || dev < num_devices_,
@@ -51,7 +51,7 @@ bool get_p2p_access(c10::DeviceIndex dev, c10::DeviceIndex dev_to_access) {
 
   int result = 0;
   C10_CUDA_CHECK(cudaDeviceCanAccessPeer(&result, dev, dev_to_access));
-  printf("\ngot result as %d", result);
+  //printf("\ngot result as %d", result);
   cache = result ? 1 : 0;
   if (cache) {
     CUDACachingAllocator::enablePeerAccess(dev, dev_to_access);
