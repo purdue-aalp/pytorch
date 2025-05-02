@@ -676,9 +676,11 @@ _embedding_bag_cuda(const Tensor &weight, const Tensor &indices_,
   auto offset2bag =
       at::empty({indices.size(0)}, indices.options()); // offset2bag = [0 0 0 0 0]
 
-  cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+  cudaStream_t stream = at::cuda::getCurrentCUDAStream(indices_.get_device());
 
   weight.to_device(indices_.get_device());
+
+  c10::cuda::set_device(indices_.get_device());
 
   auto output = at::empty({numBags, featureSize}, weight.options());
 
